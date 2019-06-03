@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals, print_function
 import json
 import os
+from typing import List
 
 import logging
 logger = logging.getLogger(__name__)
@@ -66,11 +67,29 @@ class Parser(object):
         for child in root.children:
             self.print_tree(root=child, indent=indent+2)
 
+    def _is_resource(self, token: str) -> bool:
+        return token in list(self.kube_client._cached_resources.keys())
+
+    def _get_suggestions(self, word: str, resource: str) -> List[str]:
+        if self._is_resource(resource):
+            word_list = self.kube_client._cached_resources[resource]
+        else:
+            word_list = []
+
+        suggestions = [w for w in word_list if w.startswith(word)]
+        return suggestions
+
     def parse_tokens(self, tokens):
         """ Parse a sequence of tokens
 
         returns tuple of (parsed tokens, suggestions)
         """
+        if len(tokens) > 1 and self._is_resource(tokens[-2]):
+            resource = tokens[-2]
+            word = tokens[-1]
+            suggestion_dict = {suggestion: None for suggestion in self._get_suggestions(word, resource)}
+            return None, None, suggestion_dict
+
         if len(tokens) == 1:
             return list(), tokens, {"kubectl": self.ast.help}
         else:
