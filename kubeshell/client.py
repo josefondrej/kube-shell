@@ -187,4 +187,5 @@ class KubernetesClient(object):
         return deploy_name
 
     def _parse_namespace(self):
-        return "conversation"  # TODO: implement properly
+        current_namespace = config.list_kube_config_contexts()[1]["context"]["namespace"]
+        return current_namespace
