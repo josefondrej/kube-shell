@@ -23,6 +23,7 @@ class Toolbar(object):
                 help = "OFF"
 
             return [
+                (Keyword, '[F3] Refresh cache'),
                 (Keyword, ' [F4] Cluster: '),
                 (Token.Toolbar, get_cluster_name()),
                 (Keyword, ' [F5] Namespace: '),

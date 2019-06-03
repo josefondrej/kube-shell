@@ -98,6 +98,11 @@ class Kubeshell(object):
             os.makedirs(shell_dir)
         self.toolbar = Toolbar(self.get_cluster_name, self.get_namespace, self.get_user, self.get_inline_help)
 
+    @registry.add_binding(Keys.F3)
+    def _(event):
+        KubernetesClient._cache_ready = False
+        client._init_cached_resources(verbose=False)
+
     @registry.add_binding(Keys.F4)
     def _(event):
         try:

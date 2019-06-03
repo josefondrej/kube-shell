@@ -153,14 +153,19 @@ class KubernetesClient(object):
         names = [item.metadata.name for item in resource_v1_list.items]
         return names
 
-    def _init_cached_resources(self, namespace: str):
+    def _init_cached_resources(self, namespace: str = None, verbose=True):
+        if namespace is None:
+            self._namespace = self._parse_namespace()
+            namespace = self._namespace
+
         cache_dir_expanded = os.path.expanduser(KubernetesClient._cache_dir)
         if not os.path.exists(cache_dir_expanded):
             os.makedirs(cache_dir_expanded)
         cache_file = cache_dir_expanded + KubernetesClient._cache_file
 
         if not KubernetesClient._cache_ready:
-            print("[INFO] Caching resources.")
+            if verbose:
+                print("[INFO] Caching resources.")
             resource_names = ["service", "pod", "secret", "configmap"]
             for resource_name in resource_names:
                 try:
