@@ -178,6 +178,7 @@ class KubernetesClient(object):
                            for pod_name in self._cached_resources["pod"]]
             deployments = list(set(deployments))
             self._cached_resources["deployment"] = deployments
+            self._cached_resources["deploy"] = deployments
 
             json.dump(self._cached_resources, open(cache_file, "w"))
             KubernetesClient._cache_ready = True
