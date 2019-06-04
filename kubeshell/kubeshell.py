@@ -12,6 +12,7 @@ from kubeshell.lexer import KubectlLexer
 from kubeshell.toolbar import Toolbar
 from kubeshell.client import KubernetesClient, kubeconfig_filepath
 
+import re
 import os
 import click
 import sys
@@ -97,6 +98,7 @@ class Kubeshell(object):
         if not os.path.exists(shell_dir):
             os.makedirs(shell_dir)
         self.toolbar = Toolbar(self.get_cluster_name, self.get_namespace, self.get_user, self.get_inline_help)
+        self._parse_aliases()
 
     @registry.add_binding(Keys.F3)
     def _(event):
@@ -186,5 +188,30 @@ class Kubeshell(object):
             if user_input:
                 if '-o' in user_input and 'json' in user_input:
                     user_input += ' | pygmentize -l json'
+                user_input = self._replace_aliases(user_input)
                 p = subprocess.Popen(user_input, shell=True)
                 p.communicate()
+
+    def _replace_aliases(self, user_input):
+        user_tokens = user_input.split()
+        user_tokens_replaced = [self._aliases.get(token) or token for token in user_tokens]
+        user_input_aliases_replaced = " ".join(user_tokens_replaced)
+        return user_input_aliases_replaced
+
+    def _parse_aliases(self):
+        alias_pattern = "alias[ ]*[a-zA-Z0-9]+[ ]*=[ ]*'[^']+'"
+        bashrc_path = "~/.bashrc"
+        with open(os.path.expanduser(bashrc_path), "r") as bashrc_file:
+            bashrc_contents = bashrc_file.readlines()
+
+        aliases = re.findall(alias_pattern, "".join(bashrc_contents))
+        alias_dict = {}
+        for alias in aliases:
+            alias_split = alias.split("=")
+            alias_name = alias_split[0]
+            alias_value = "=".join(alias_split[1:])
+            alias_value = alias_value[1:-1].strip()
+            alias_name = alias_name[len("alias "):].strip()
+            alias_dict[alias_name] = alias_value
+
+        self._aliases = alias_dict

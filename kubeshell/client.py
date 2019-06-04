@@ -173,9 +173,6 @@ class KubernetesClient(object):
                 except:
                     self._cached_resources[resource_name] = []
                     print(f"[ERROR] Getting namespaced resource {resource_name}")
-                    import sys
-                    exc_info = sys.exc_info()
-                    print(exc_info)
 
             deployments = [self._pod_name_to_deploy_name(pod_name)
                            for pod_name in self._cached_resources["pod"]]
